@@ -6,12 +6,11 @@ Read RSS regularly and Tweet
 
 ```
 docker run -it --rm \
+    -e RSS_URL=https://news.google.com/rss/search?hl=ja&gl=JP&ceid=JP:ja&q=twitter \
     -e CONSUMER_KEY=x \
     -e CONSUMER_SECRET=x \
     -e ACCESS_TOKEN=x \
     -e ACCESS_TOKEN_SECRET=x \
-    -v /Users/hashito/git/twitter4docker/TweetRSS/main.py:/root/main.py   \
-    -v /Users/hashito/git/twitter4docker/TweetRSS/cash:/root/cash   \
     hashito/tweetrss
 ```
 

@@ -48,6 +48,7 @@ if(__name__ == '__main__'):
                 send_tweet(f"{i['title']} {i['link']} {ADD_TEXT}")
                 time.sleep(TWEET_DELAY)
             cash["id"]=tm
+            cash_wite(cash)
         for k in cash.keys():
             if((cash[k]+60)<tm):
                 print("delete:",k,cash[k],tm)
