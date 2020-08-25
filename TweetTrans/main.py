@@ -6,14 +6,17 @@ import datetime
 import json
 from requests_oauthlib import OAuth1Session
 
-RSS_URL=os.environ["RSS_URL"]
+TRANS_URL=os.environ["TRANS_URL"]
+SOURCE_TYPE=os.environ["SOURCE_TYPE"]
+TARGET_TYPE=os.environ["TARGET_TYPE"]
+TARGET_USER=os.environ["TARGET_USER"]
+
 CONSUMER_KEY=os.environ["CONSUMER_KEY"]
 CONSUMER_SECRET=os.environ["CONSUMER_SECRET"]
 ACCESS_TOKEN=os.environ["ACCESS_TOKEN"]
 ACCESS_TOKEN_SECRET=os.environ["ACCESS_TOKEN_SECRET"]
 
 CASH_FILE=os.environ["CASH_FILE"]
-ADD_TEXT=os.environ["ADD_TEXT"]
 SCAN_SPAN=int(os.environ["SCAN_SPAN"])
 TWEET_DELAY=int(os.environ["TWEET_DELAY"])
 
@@ -26,8 +29,26 @@ def cash_wite(data):
     with open(CASH_FILE,"w") as f:
         f.wite(json.dumps(data),ensure_ascii=False)
 
-def read_rss():
-    return feedparser.parse(RSS_URL)
+def read_tweet():
+    # Twitter Endpoint(ユーザータイムラインを取得する)
+    url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
+
+    # Enedpointへ渡すパラメーター
+    params ={
+            'count'       : 5,             # 取得するtweet数
+            'screen_name' : 'mos_burger',  # twitterアカウント名
+            }
+
+    req = twitter.get(url, params = params)
+
+    if req.status_code == 200:
+        res = json.loads(req.text)
+        for line in res:
+            print(line['user']['name']+'::'+line['text'])
+            print(line['created_at'])
+            print('*******************************************')
+    else:
+        print("Failed: %d" % req.status_code)
     
 def send_tweet(text):
     twitter = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET) #認証処理

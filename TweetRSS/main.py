@@ -49,7 +49,7 @@ if(__name__ == '__main__'):
                 time.sleep(TWEET_DELAY)
             cash[i["id"]]=tm
             cash_write(cash)
-        for k in cash.keys():
+        for k in list(cash.keys()):
             if((cash[k]+60)<tm):
                 print("delete:",k,cash[k],tm)
                 cash.pop(k)
