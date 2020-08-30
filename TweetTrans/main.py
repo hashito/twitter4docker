@@ -4,12 +4,15 @@ import os
 import time
 import datetime
 import json
+import requests
 from requests_oauthlib import OAuth1Session
 
 TRANS_URL=os.environ["TRANS_URL"]
 SOURCE_TYPE=os.environ["SOURCE_TYPE"]
 TARGET_TYPE=os.environ["TARGET_TYPE"]
-TARGET_USER=os.environ["TARGET_USER"]
+
+TARGET_USER_ID=os.environ["TARGET_USER_ID"]
+TARGET_COUNT=int(os.environ["TARGET_COUNT"])
 
 CONSUMER_KEY=os.environ["CONSUMER_KEY"]
 CONSUMER_SECRET=os.environ["CONSUMER_SECRET"]
@@ -25,30 +28,31 @@ def cash_read():
     with open(CASH_FILE) as f:
         return json.loads(f.read())
 
-def cash_wite(data):
-    with open(CASH_FILE,"w") as f:
-        f.wite(json.dumps(data),ensure_ascii=False)
+def cash_write(data):
+    with open(CASH_FILE,mode="w") as f:
+        f.write(json.dumps(data,ensure_ascii=False))
 
-def read_tweet():
-    # Twitter Endpoint(ユーザータイムラインを取得する)
+def read_tweet(since_id):
+    twitter = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
     url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
-
-    # Enedpointへ渡すパラメーター
     params ={
-            'count'       : 5,             # 取得するtweet数
-            'screen_name' : 'mos_burger',  # twitterアカウント名
+            'count'   : TARGET_COUNT , 
+            'user_id' : TARGET_USER_ID
             }
-
-    req = twitter.get(url, params = params)
-
+    if(since_id):
+        params['since_id']=since_id
+    
+    req = twitter.get(url,params=params)
     if req.status_code == 200:
         res = json.loads(req.text)
         for line in res:
             print(line['user']['name']+'::'+line['text'])
             print(line['created_at'])
             print('*******************************************')
+        return res
     else:
         print("Failed: %d" % req.status_code)
+        return []
     
 def send_tweet(text):
     twitter = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET) #認証処理
@@ -57,21 +61,100 @@ def send_tweet(text):
     res = twitter.post(url, params = params) #post送信
     return res.status_code == 200
 
+
+def trans_tweet(text):
+    params ={
+            'text'   : text , 
+            'source' : SOURCE_TYPE,
+            'target' : TARGET_TYPE,
+            }    
+    print(TRANS_URL,params)
+    req = requests.get(TRANS_URL,params=params)
+    if req.status_code == 200:
+        res = json.loads(req.text)
+        print(res["text"])
+        return res["text"]
+    else:
+        print("Failed: %d" % req.status_code)
+        return []
+
+#############################
+#  @foxnews => [to:Fox News]
+def mentions2name(tweet):
+    text = tweet['text']
+    if('entities' in tweet and 'user_mentions' in tweet['entities']):
+        user_mentions = tweet['entities']['user_mentions']
+        for u in user_mentions:
+            text = text.replace(f"@{u['screen_name']}",f"[to:{u['name']}]")
+        tweet["mentions2name"]={"text":text}
+    return text
+
+
+def tweetsplit(text,tweet_max=140):
+    base_texts=text.split()
+    ret=[]
+    count=0
+    tmp_text=[]
+    for t in base_texts:
+        if(len(t)>=tweet_max):
+            ret.append(" ".join(tmp_text))
+            ret.extend([t[i: i+tweet_max] for i in range(0,len(t),tweet_max)])
+            count=0
+            tmp_text=[]
+        else:
+            count=count+len(t)+1
+            if(count>=tweet_max):
+                ret.append(" ".join(tmp_text))
+                count=len(t)
+                tmp_text=[]
+            tmp_text.append(t)
+    if(not tmp_text==[]):
+        ret.append(" ".join(tmp_text))
+    return ret
+
+
 if(__name__ == '__main__'):
     cash=cash_read()
     print("cash:",cash)
     while(1):
         tm=datetime.datetime.now().timestamp()
-        rss=read_rss()
-        for i in rss["entries"]:
-            if(not i["id"] in cash):
-                print("tweet:",f"{i['title']} {i['link']} {ADD_TEXT}")
-                send_tweet(f"{i['title']} {i['link']} {ADD_TEXT}")
+        tweets=read_tweet(cash["since_id"])
+        for i in tweets:
+            text=mentions2name(i)
+            text=trans_tweet(text)
+            texts=tweetsplit(text)
+            for t in texts:
+                send_tweet(t)
                 time.sleep(TWEET_DELAY)
-            cash["id"]=tm
-        for k in cash.keys():
-            if((cash[k]+60)<tm):
-                print("delete:",k,cash[k],tm)
-                cash.pop(k)
+            if(not cash["since_id"] or int(cash["since_id"])<int(i['id_str'])):
+                cash["since_id"]=i['id_str']
+            cash_write(cash)
         time.sleep(SCAN_SPAN)
-# update
+
+#    # trans_tweet:test
+#    trans_tweet("これはペンです")
+#    # tes:tweetsplit
+#    print(tweetsplit("1234567890",1))
+#    print(tweetsplit("1 2 34 567 8 90",2))
+#    print(tweetsplit("1 2 34 567 8 90",3))
+#    print(tweetsplit("1 2 34 567 8 90",4))
+#    print(tweetsplit("1 2 34 567 8 90",5))
+#    print(tweetsplit("1 2 34 567 8 90",6))
+#    print(tweetsplit("1 2 34 567 8 90",7))
+#    print(tweetsplit("1 2 34 567 8 90",8))
+#    print(tweetsplit("1 2 34 567 8 90",9))
+#    print(tweetsplit("1 2 34 567 8 90",10))
+#    print(tweetsplit("1 2 34 567 8 90",11))
+#    print(tweetsplit("1 2 34 567 8 90",12))
+#    print(tweetsplit("1 2 34 567 8 90",13))
+#    print(tweetsplit("1 2 34 567 8 90",14))
+#    print(tweetsplit("1 2 34 567 8 90",15))
+#    print(tweetsplit("1 2 34 567 8 90",16))
+#    print(tweetsplit("1 2 34 567 8 90",17))
+#    print(tweetsplit("1 2 34 567 8 90",18))
+#    print(tweetsplit("1 2 34 567 8 90",19))
+#    print(tweetsplit("1 2 34 567 8 90",20))
+#    print(tweetsplit("1 2 34 567 8 90",21))
+
+
+

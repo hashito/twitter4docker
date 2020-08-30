@@ -17,4 +17,5 @@ ENV TRANS_URL=https://script.google.com/macros/s/xxxx \
     SCAN_SPAN=30 \
     TWEET_DELAY=150
 
-CMD ["python","/root/main.py"]
+RUN chmod a+x /root/run.sh
+CMD ["/root/run.sh"]
