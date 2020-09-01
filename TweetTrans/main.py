@@ -22,7 +22,7 @@ ACCESS_TOKEN_SECRET=os.environ["ACCESS_TOKEN_SECRET"]
 CASH_FILE=os.environ["CASH_FILE"]
 SCAN_SPAN=int(os.environ["SCAN_SPAN"])
 TWEET_DELAY=int(os.environ["TWEET_DELAY"])
-
+SCREEN_NAME=os.environ["SCREEN_NAME"]
 
 def cash_read():
     with open(CASH_FILE) as f:
@@ -54,13 +54,27 @@ def read_tweet(since_id):
         print("Failed: %d" % req.status_code)
         return []
     
-def send_tweet(text):
-    twitter = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET) #認証処理
-    url = "https://api.twitter.com/1.1/statuses/update.json" #ツイートポストエンドポイント
-    params = {"status" : text}
-    res = twitter.post(url, params = params) #post送信
-    return res.status_code == 200
-
+def send_tweet(text,tgurl,replyid=False):
+    twitter = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET) 
+    url = "https://api.twitter.com/1.1/statuses/update.json" 
+    params = {
+        "status" : text,
+        "batch_mode":"first",
+        "weighted_character_count":True,
+        "attachment_url":tgurl
+        }
+    if(replyid):
+        params["batch_mode"] ="subsequent"
+        params["status"]     =f"@{SCREEN_NAME} " + params["status"]
+        params["in_reply_to_status_id"] = replyid
+    
+    print(params)
+    res = twitter.post(url, params = params) 
+    if(res.status_code == 200):
+        return json.loads(res.text)["id_str"]
+    else:
+        print(res.status_code,res.text)
+        return False
 
 def trans_tweet(text):
     params ={
@@ -90,7 +104,7 @@ def mentions2name(tweet):
     return text
 
 
-def tweetsplit(text,tweet_max=140):
+def tweetsplit(text,tweet_max=130):
     base_texts=text.split()
     ret=[]
     count=0
@@ -120,11 +134,13 @@ if(__name__ == '__main__'):
         tm=datetime.datetime.now().timestamp()
         tweets=read_tweet(cash["since_id"])
         for i in tweets:
+            url=f"https://twitter.com/{i['user']['screen_name']}/status/{i['id_str']}"
             text=mentions2name(i)
             text=trans_tweet(text)
             texts=tweetsplit(text)
+            replyid=False
             for t in texts:
-                send_tweet(t)
+                replyid=send_tweet(t,url,replyid)
                 time.sleep(TWEET_DELAY)
             if(not cash["since_id"] or int(cash["since_id"])<int(i['id_str'])):
                 cash["since_id"]=i['id_str']
