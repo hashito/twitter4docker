@@ -18,9 +18,14 @@ docker run -it --rm \
     -e CONSUMER_SECRET=x \
     -e ACCESS_TOKEN=x-x \
     -e ACCESS_TOKEN_SECRET=x \
-    -v /Users/hashito/git/twitter4docker/TweetRSS/main.py:/root/main.py   \
-    -v /Users/hashito/git/twitter4docker/TweetRSS/cash:/root/cash   \
+    -e TRANS_URL="https://script.google.com/macros/s/x/exec" \
+    -e TARGET_USER_ID=1176288952401059841 \
+    -e TARGET_COUNT=10 \
+    -e SCAN_SPAN=60 \
+    -e TWEET_DELAY=60 \
+    -e SCREEN_NAME=hasitozzz \
     hashito/tweettrans
+
 ```
 
 
