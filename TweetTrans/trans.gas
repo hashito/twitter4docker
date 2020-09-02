@@ -1,6 +1,8 @@
 function doGet(e) {
     var p = e.parameter;
-    var translatedText = LanguageApp.translate(p.text, p.source, p.target);
+    var translatedText = LanguageApp.translate(p.text, p.source, p.target
+//                                               , {contentType: 'html'}
+                                              );
     var body;
     if (translatedText) {
         body = {

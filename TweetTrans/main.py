@@ -1,4 +1,3 @@
-import feedparser
 import json
 import os
 import time
@@ -13,6 +12,7 @@ TARGET_TYPE=os.environ["TARGET_TYPE"]
 
 TARGET_USER_ID=os.environ["TARGET_USER_ID"]
 TARGET_COUNT=int(os.environ["TARGET_COUNT"])
+SCREEN_NAME=os.environ["SCREEN_NAME"]
 
 CONSUMER_KEY=os.environ["CONSUMER_KEY"]
 CONSUMER_SECRET=os.environ["CONSUMER_SECRET"]
@@ -22,7 +22,6 @@ ACCESS_TOKEN_SECRET=os.environ["ACCESS_TOKEN_SECRET"]
 CASH_FILE=os.environ["CASH_FILE"]
 SCAN_SPAN=int(os.environ["SCAN_SPAN"])
 TWEET_DELAY=int(os.environ["TWEET_DELAY"])
-SCREEN_NAME=os.environ["SCREEN_NAME"]
 
 def cash_read():
     with open(CASH_FILE) as f:
@@ -135,9 +134,9 @@ if(__name__ == '__main__'):
         tweets=read_tweet(cash["since_id"])
         for i in tweets:
             url=f"https://twitter.com/{i['user']['screen_name']}/status/{i['id_str']}"
-            text=mentions2name(i)
-            text=trans_tweet(text)
-            texts=tweetsplit(text)
+            text  = mentions2name(i)
+            text  = trans_tweet(text)
+            texts = tweetsplit(text)
             replyid=False
             for t in texts:
                 replyid=send_tweet(t,url,replyid)
@@ -171,6 +170,3 @@ if(__name__ == '__main__'):
 #    print(tweetsplit("1 2 34 567 8 90",19))
 #    print(tweetsplit("1 2 34 567 8 90",20))
 #    print(tweetsplit("1 2 34 567 8 90",21))
-
-
-
