@@ -35,8 +35,9 @@ def read_tweet(since_id):
     twitter = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
     url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
     params ={
-            'count'   : TARGET_COUNT , 
-            'user_id' : TARGET_USER_ID
+            'count'      : TARGET_COUNT , 
+            'user_id'    : TARGET_USER_ID ,
+            'tweet_mode' : "extended"
             }
     if(since_id):
         params['since_id']=since_id
@@ -45,7 +46,7 @@ def read_tweet(since_id):
     if req.status_code == 200:
         res = json.loads(req.text)
         for line in res:
-            print(line['user']['name']+'::'+line['text'])
+            print(line['user']['name']+'::'+line['full_text'])
             print(line['created_at'])
             print('*******************************************')
         return res
@@ -94,7 +95,7 @@ def trans_tweet(text):
 #############################
 #  @foxnews => [to:Fox News]
 def mentions2name(tweet):
-    text = tweet['text']
+    text = tweet['full_text']
     if('entities' in tweet and 'user_mentions' in tweet['entities']):
         user_mentions = tweet['entities']['user_mentions']
         for u in user_mentions:
