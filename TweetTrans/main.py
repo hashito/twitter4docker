@@ -44,7 +44,8 @@ def read_tweet(since_id):
     
     req = twitter.get(url,params=params)
     if req.status_code == 200:
-        res = json.loads(req.text)
+        res = list(json.loads(req.text))
+#        print(json.dumps(res))
         for line in res:
             print(line['user']['name']+'::'+line['full_text'])
             print(line['created_at'])
