@@ -1,6 +1,6 @@
 # comment
 
-Read RSS regularly and Tweet
+mysql db resist tweet
 
 ## use
 
@@ -10,9 +10,14 @@ docker run -it --rm \
     -e CONSUMER_SECRET=x \
     -e ACCESS_TOKEN=x-x \
     -e ACCESS_TOKEN_SECRET=x \
-    -v /Users/hashito/git/twitter4docker/TweetRSS/main.py:/root/main.py   \
-    -v /Users/hashito/git/twitter4docker/TweetRSS/cash:/root/cash   \
-    hashito/tweetrss
+    -p 80:80 \
+    -e REQ_Q="test" \
+    -e DB_HOST="0.0.0.0" \
+    -e DB_USERNAME="root" \
+    -e DB_PASSWORD="pass" \
+    -e REQ_COUNT=50 \
+    --network net  \
+    hashito/tweetsearchapi:0.0.1
 ```
 
 
