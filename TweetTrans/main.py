@@ -42,7 +42,7 @@ def read_tweet(since_id):
     if(since_id):
         params['since_id']=since_id
     
-    req = twitter.get(url,params=params)
+    req = twitter.get(url,params=params,timeout=60.0)
     if req.status_code == 200:
         res = list(json.loads(req.text))
 #        print(json.dumps(res))
@@ -70,7 +70,7 @@ def send_tweet(text,tgurl,replyid=False):
         params["in_reply_to_status_id"] = replyid
     
     print(params)
-    res = twitter.post(url, params = params) 
+    res = twitter.post(url, params = params,timeout=60.0) 
     if(res.status_code == 200):
         return json.loads(res.text)["id_str"]
     else:
@@ -84,7 +84,7 @@ def trans_tweet(text):
             'target' : TARGET_TYPE,
             }    
     print(TRANS_URL,params)
-    req = requests.get(TRANS_URL,params=params)
+    req = requests.get(TRANS_URL,params=params,timeout=60.0)
     if req.status_code == 200:
         res = json.loads(req.text)
         print(res["text"])
@@ -134,6 +134,8 @@ if(__name__ == '__main__'):
     while(1):
         tm=datetime.datetime.now().timestamp()
         tweets=read_tweet(cash["since_id"])
+        tweets.reverse()
+        print(f"{tm}={cash['since_id']}," ,end="")
         for i in tweets:
             url=f"https://twitter.com/{i['user']['screen_name']}/status/{i['id_str']}"
             text  = mentions2name(i)

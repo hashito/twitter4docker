@@ -15,4 +15,5 @@ ENV RSS_URL=https://news.google.com/rss/search?hl=ja&gl=JP&ceid=JP:ja&q=twitter 
     SCAN_SPAN=600 \
     TWEET_DELAY=150
 
-CMD ["python","/root/main.py"]
+RUN chmod a+x /root/run.sh
+CMD ["/root/run.sh"]
