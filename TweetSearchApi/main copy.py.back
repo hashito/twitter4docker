@@ -1,0 +1,112 @@
+import feedparser
+import json
+import os
+import time
+import datetime
+import json
+import requests
+from requests_oauthlib import OAuth1Session,OAuth1
+import flask
+
+
+#TRANS_URL=os.environ["TRANS_URL"]
+#SOURCE_TYPE=os.environ["SOURCE_TYPE"]
+#TARGET_TYPE=os.environ["TARGET_TYPE"]
+#TARGET_USER=os.environ["TARGET_USER"]
+
+CONSUMER_KEY=os.environ["CONSUMER_KEY"]
+CONSUMER_SECRET=os.environ["CONSUMER_SECRET"]
+ACCESS_TOKEN=os.environ["ACCESS_TOKEN"]
+ACCESS_TOKEN_SECRET=os.environ["ACCESS_TOKEN_SECRET"]
+
+REQ_Q=os.environ["REQ_Q"]
+REQ_LANG=os.environ["REQ_LANG"]
+REQ_LOCALE=os.environ["REQ_LOCALE"]
+REQ_POPULAR=os.environ["REQ_POPULAR"]
+REQ_COUNT=os.environ["REQ_COUNT"]
+REQ_SINCE_ID=os.environ["REQ_SINCE_ID"]
+REQ_MAX_ID=os.environ["REQ_MAX_ID"]
+REQ_INCLUDE_ENTITES=os.environ["REQ_INCLUDE_ENTITES"]
+REQ_UNTIL=os.environ["REQ_UNTIL"]
+REQ_GEOCODE=os.environ["REQ_GEOCODE"]
+
+DB_HOST=os.environ["DB_HOST"]
+DB_USERNAME=os.environ["DB_USERNAME"]
+DB_PASSWORD=os.environ["DB_PASSWORD"]
+DB_PORT=os.environ["DB_PORT"]
+
+#
+#CASH_FILE=os.environ["CASH_FILE"]
+#SCAN_SPAN=int(os.environ["SCAN_SPAN"])
+#TWEET_DELAY=int(os.environ["TWEET_DELAY"])
+
+
+def cash_read():
+    with open(CASH_FILE) as f:
+        return json.loads(f.read())
+
+def cash_wite(data):
+    with open(CASH_FILE,"w") as f:
+        f.wite(json.dumps(data),ensure_ascii=False)
+
+def search_tweet():
+    auth = OAuth1(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+    url = "https://api.twitter.com/1.1/search/tweets.json"
+
+    # Enedpointへ渡すパラメーター
+    params ={
+            'q'       : "を観ているよ。Prime Videoを今すぐチェックする",  # サーチテキスト
+            'lang'    : 'ja'     ,  # Language
+            'locale'  : 'ja'     ,
+            'popular' : 'recent' , # type(最新のみ)
+            'count'   : 10       , # count
+            'since_id': 'null'  # これ以降のツイートを取得
+            'max_id'  : 'null'  # これ以前のツイート
+            'include_entities'
+            'until'
+
+            }
+
+    req = requests.get(url, params = params,auth=auth)
+
+    if req.status_code == 200:
+        res = json.loads(req.text)
+        print(req.text)
+        
+        for line in res["statuses"]:
+            print(line["text"])
+#            print(line['user']['name']+'::'+line['text'])
+#            print(line['created_at'])
+#            print('*******************************************')
+    else:
+        print("Failed: %d" % req.status_code)
+    
+def send_tweet(text):
+    twitter = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET) #認証処理
+    url = "https://api.twitter.com/1.1/statuses/update.json" #ツイートポストエンドポイント
+    params = {"status" : text}
+    res = twitter.post(url, params = params) #post送信
+    return res.status_code == 200
+
+if(__name__ == '__main__'):
+    search_tweet()
+    
+
+
+#    cash=cash_read()
+#    print("cash:",cash)
+#    while(1):
+#        tm=datetime.datetime.now().timestamp()
+#        rss=read_rss()
+#        for i in rss["entries"]:
+#            if(not i["id"] in cash):
+#                print("tweet:",f"{i['title']} {i['link']} {ADD_TEXT}")
+#                send_tweet(f"{i['title']} {i['link']} {ADD_TEXT}")
+#                time.sleep(TWEET_DELAY)
+#            cash["id"]=tm
+#        for k in cash.keys():
+#            if((cash[k]+60)<tm):
+#                print("delete:",k,cash[k],tm)
+#                cash.pop(k)
+#        time.sleep(SCAN_SPAN)
+# update
