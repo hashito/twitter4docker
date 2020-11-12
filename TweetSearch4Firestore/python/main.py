@@ -68,7 +68,8 @@ def search_tweet():
             'locale'  : REQ_LOCALE      ,
             'popular' : REQ_POPULAR     , # type(最新のみ)
             'count'   : REQ_COUNT       , # count
-            'include_entities' : REQ_INCLUDE_ENTITIES 
+            'include_entities' : REQ_INCLUDE_ENTITIES ,
+            'tweet_mode' : "extended"
             }
     print(json.dumps(params, ensure_ascii=False ))
     req = requests.get(url, params = params,auth=auth)
@@ -81,18 +82,21 @@ def search_tweet():
             tmpdata={
                 "id":line['id_str'],
                 "uid":line['user']['id_str'],
-                "time":twdate2date(line['created_at']).strftime('%Y/%m/%d %H:%M:%S'),
-                "text":line['text'],
+                "time":twdate2date(line['created_at']).timestamp(),
+                "text":line['full_text'],
                 "favorite_count":line["favorite_count"],
                 "retweet_count":line["retweet_count"]
+# --debug--
+#                ,
+#                "d_time":twdate2date(line['created_at']).strftime('%Y/%m/%d %H:%M:%S'),
+#                "d_debug":json.dumps(line,ensure_ascii=False ) #this is debug
             }
             try:
                 tmpdata["url"]=line["entities"]["urls"][0]["expanded_url"]
             except:
                 pass
             tweets.append(tmpdata)
-            print(json.dumps([line['id_str'],line['user']['id_str'],line["favorite_count"],line["retweet_count"]], ensure_ascii=False ))
-            print("https://twitter.com/{}/status/{}".format(line['user']['id_str'],line['id_str']))
+            print(json.dumps(line,ensure_ascii=False ))
         return tweets
         
         for line in res["statuses"]:
