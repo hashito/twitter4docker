@@ -13,18 +13,21 @@ copy and use
 ###
 
 ```
-docker run -it --rm \
-    -e CONSUMER_KEY=x \
-    -e CONSUMER_SECRET=x \
-    -e ACCESS_TOKEN=x-x \
-    -e ACCESS_TOKEN_SECRET=x \
-    -e TRANS_URL="https://script.google.com/macros/s/x/exec" \
-    -e TARGET_USER_ID=1176288952401059841 \
-    -e TARGET_COUNT=10 \
-    -e SCAN_SPAN=60 \
-    -e TWEET_DELAY=60 \
-    -e SCREEN_NAME=hasitozzz \
-    hashito/tweettrans
+docker run -it --rm -p 80:80\
+    -e TRANS_URL=xxx \
+    -e SOURCE_TYPE=en \
+    -e TARGET_TYPE=ja \
+    -e TARGET_USER_ID=25073877 \
+    -e SCREEN_NAME=xxx \
+    -e TARGET_COUNT=30 \
+    -e FIRST_TWEET_ID=xx \
+    -e DOCUMENT_NAME=xx \
+    -e CONSUMER_KEY=xxx \
+    -e CONSUMER_SECRET=xx \
+    -e ACCESS_TOKEN=xx-xx \
+    -e ACCESS_TOKEN_SECRET=xxx \
+    -e FIREBASEKEY=xxx \
+    hashito/tweet-trans-server:20210206v1
 
 ```
 
@@ -32,5 +35,5 @@ docker run -it --rm \
 ## build
 
 ```
-docker build -t hashito/tweettrans .
+docker build -t hashito/tweet-trans-server:20210206v1 .
 ```
